@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="shop-button.html">
 <link rel="import" href="shop-common-styles.html">
 <link rel="import" href="shop-form-styles.html">
@@ -362,6 +363,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                       </shop-md-decorator>
                     </shop-input>
                   </div>
+                  <paper-input label="Discount code"on-value-changed="_validateDiscountCode"></paper-input>
                   <h2>Order Summary</h2>
                   <dom-repeat items="[[cart]]" as="entry">
                     <template>
@@ -372,8 +374,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </template>
                   </dom-repeat>
                   <div class="row total-row">
+                    <div class="flex">Discount</div>
+                    <div>[[discount]]%</div>
+                  </div>
+                  <div class="row total-row">
                     <div class="flex">Total</div>
-                    <div>[[_formatPrice(total)]]</div>
+                    <div>[[_formatPrice(computedTotal)]]</div>
                   </div>
                   <shop-button responsive id="submitBox">
                     <input type="button" on-click="_submit" value="Place Order">
@@ -420,7 +426,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
-
+    const SECRET_DISCOUNT_CODE = "newbie";
+    const DEFAULT_DISCOUNT = 0;
     class ShopCheckout extends Polymer.Element {
 
       static get is() { return 'shop-checkout'; }
@@ -440,6 +447,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * The total price of the contents in the user's cart.
          */
         total: Number,
+        computedTotal: Number,
 
         /**
          * The state of the form. Valid values are:
@@ -483,6 +491,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           type: Boolean,
           readOnly: true,
           reflectToAttribute: true
+        },
+        discount: {
+            type: Number,
+            value: 0
         },
 
         /**
@@ -677,7 +689,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           bubbles: true, composed: true, detail: { title: 'Checkout' }}));
       }
 
-    }
+          _validateDiscountCode(event) {
+              if (event.detail.value === SECRET_DISCOUNT_CODE) {
+                  console.log('NEWBIE!');
+                  this.discount = -20;
+              } else {
+                  this.discount = DEFAULT_DISCOUNT;
+              }
+              this.computedTotal = this.total * ((100 + this.discount) / 100);
+          }
+
+      }
 
     customElements.define(ShopCheckout.is, ShopCheckout);
 
